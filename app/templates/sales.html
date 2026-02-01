@@ -18,7 +18,7 @@
                 Ürün
                 <select id="product_type" name="product_type" required>
                     {% for key, value in product_types.items() %}
-                    <option value="{{ key }}">{{ value }}</option>
+                    <option value="{{ key }}">{{ value }} (Stok: {{ product_stocks.get(key, {}).get('stock_quantity', 0) }})</option>
                     {% endfor %}
                 </select>
             </label>

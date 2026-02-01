@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#d35400">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Kadıoğlu Yufka</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .order-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .order-header h1 {
+            color: var(--pico-primary);
+        }
+
+        .product-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--pico-card-background-color);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-item label {
+            margin: 0;
+        }
+
+        .product-item input {
+            width: 80px;
+            margin: 0;
+        }
+
+        .delivery-info {
+            background: var(--pico-primary-background);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .delivery-info.warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+        }
+
+        [data-theme="dark"] .delivery-info.warning {
+            background: #664d03;
+            border-color: #997404;
+        }
+
+        .total-section {
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-align: right;
+            padding: 1rem;
+            background: var(--pico-card-background-color);
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .success-message .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        #address-section {
+            display: none;
+        }
+
+        .min-amount-warning {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <div class="order-header">
+            <h1>Kadıoğlu Yufka</h1>
+            <p>Siparişinizi verin, biz hazırlayalım!</p>
+        </div>
+
+        {% if success %}
+        <div class="success-message">
+            <div class="icon">✅</div>
+            <h2>Siparişiniz Alındı!</h2>
+            <p>Sipariş numaranız: <strong>#{{ order_id }}</strong></p>
+            <p>En kısa sürede sizinle iletişime geçeceğiz.</p>
+            <a href="/siparis" role="button">Yeni Sipariş Ver</a>
+        </div>
+        {% else %}
+
+        {% if error %}
+        <div class="delivery-info warning">
+            <strong>⚠️ {{ error }}</strong>
+        </div>
+        {% endif %}
+
+        <form method="post" action="/siparis" id="order-form">
+            <div class="form-section">
+                <h2>Teslimat Bilgileri</h2>
+
+                <div class="form-row">
+                    <label for="customer_name">
+                        Adınız Soyadınız
+                        <input type="text" id="customer_name" name="customer_name" required placeholder="Ad Soyad"
+                            value="{{ form_data.get('customer_name', '') if form_data else '' }}">
+                    </label>
+
+                    <label for="customer_phone">
+                        Telefon Numaranız
+                        <input type="tel" id="customer_phone" name="customer_phone" required
+                            placeholder="05XX XXX XX XX" inputmode="tel"
+                            value="{{ form_data.get('customer_phone', '') if form_data else '' }}">
+                    </label>
+                </div>
+
+                <label for="delivery_date">
+                    Teslimat Tarihi
+                    <input type="date" id="delivery_date" name="delivery_date" required min="{{ min_date }}"
+                        value="{{ form_data.get('delivery_date', min_date) if form_data else min_date }}">
+                </label>
+
+                <label>
+                    Teslimat Şekli
+                    <div class="form-row">
+                        <label>
+                            <input type="radio" name="delivery_type" value="gel_al" {% if not form_data or
+                                form_data.get('delivery_type')=='gel_al' %}checked{% endif %}>
+                            Gel Al (Dükkandan)
+                        </label>
+                        <label>
+                            <input type="radio" name="delivery_type" value="eve_gelsin" {% if form_data and
+                                form_data.get('delivery_type')=='eve_gelsin' %}checked{% endif %}>
+                            Eve Gelsin
+                        </label>
+                    </div>
+                </label>
+
+                <div id="address-section">
+                    <label for="address">
+                        Adres
+                        <textarea id="address" name="address" rows="2"
+                            placeholder="Teslimat adresi...">{{ form_data.get('address', '') if form_data else '' }}</textarea>
+                    </label>
+                    <div class="delivery-info">
+                        <strong>📍 Eve teslimat için minimum sipariş tutarı: {{ min_delivery_amount }} ₺</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Ürünler</h2>
+                <p>Sipariş vermek istediğiniz ürünlerin adetini girin:</p>
+
+                {% for key, value in product_types.items() %}
+                <div class="product-item">
+                    <label for="product_{{ key }}">{{ value }}</label>
+                    <input type="number" id="product_{{ key }}" name="product_{{ key }}" min="0"
+                        value="{{ form_data.get('product_' + key, '0') if form_data else '0' }}" inputmode="numeric"
+                        class="product-quantity" data-price="{{ product_prices.get(key, 0) }}">
+                </div>
+                {% endfor %}
+
+                <div class="total-section">
+                    Toplam: <span id="total-amount">0,00</span> ₺
+                </div>
+                <div id="min-amount-warning" class="min-amount-warning" style="display: none;">
+                    Eve teslimat için minimum {{ min_delivery_amount }} ₺ sipariş vermelisiniz.
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Ödeme</h2>
+
+                <label>
+                    Ödeme Yöntemi
+                    <div class="form-row">
+                        <label>
+                            <input type="radio" name="payment_method" value="nakit" {% if not form_data or
+                                form_data.get('payment_method')=='nakit' %}checked{% endif %}>
+                            Nakit
+                        </label>
+                        <label>
+                            <input type="radio" name="payment_method" value="kart" {% if form_data and
+                                form_data.get('payment_method')=='kart' %}checked{% endif %}>
+                            Kart
+                        </label>
+                    </div>
+                </label>
+
+                <label for="notes">
+                    Not (Opsiyonel)
+                    <textarea id="notes" name="notes" rows="2"
+                        placeholder="Varsa ekstra bilgi...">{{ form_data.get('notes', '') if form_data else '' }}</textarea>
+                </label>
+            </div>
+
+            <input type="hidden" name="total_amount" id="total_amount_input" value="0">
+            <button type="submit" id="submit-btn">Sipariş Ver</button>
+        </form>
+        {% endif %}
+    </main>
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Tema değiştir">
+        <span id="theme-icon">🌙</span>
+    </button>
+
+    <script>
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('theme-icon');
+            icon.textContent = theme === 'light' ? '🌙' : '☀️';
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+
+        // Delivery type toggle
+        const deliveryRadios = document.querySelectorAll('input[name="delivery_type"]');
+        const addressSection = document.getElementById('address-section');
+        const addressInput = document.getElementById('address');
+        const minAmountWarning = document.getElementById('min-amount-warning');
+        const minDeliveryAmount = {{ min_delivery_amount }};
+
+        function updateDeliverySection() {
+            const isDelivery = document.querySelector('input[name="delivery_type"]:checked').value === 'eve_gelsin';
+            addressSection.style.display = isDelivery ? 'block' : 'none';
+            addressInput.required = isDelivery;
+            updateTotal();
+        }
+
+        deliveryRadios.forEach(radio => {
+            radio.addEventListener('change', updateDeliverySection);
+        });
+
+        // Calculate total
+        const productInputs = document.querySelectorAll('.product-quantity');
+        const totalDisplay = document.getElementById('total-amount');
+        const totalInput = document.getElementById('total_amount_input');
+        const submitBtn = document.getElementById('submit-btn');
+
+        function updateTotal() {
+            let total = 0;
+            productInputs.forEach(input => {
+                const quantity = parseInt(input.value) || 0;
+                const price = parseFloat(input.dataset.price) || 0;
+                total += quantity * price;
+            });
+
+            totalDisplay.textContent = total.toLocaleString('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            totalInput.value = total;
+
+            // Check minimum delivery amount
+            const isDelivery = document.querySelector('input[name="delivery_type"]:checked').value === 'eve_gelsin';
+            if (isDelivery && total < minDeliveryAmount && total > 0) {
+                minAmountWarning.style.display = 'block';
+                submitBtn.disabled = true;
+            } else {
+                minAmountWarning.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+
+        productInputs.forEach(input => {
+            input.addEventListener('input', updateTotal);
+        });
+
+        // Initialize
+        updateDeliverySection();
+        updateTotal();
+    </script>
+</body>
+
+</html>

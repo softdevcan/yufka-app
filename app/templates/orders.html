@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Siparişler - Kadıoğlu Yufka{% endblock %}
+
+{% block content %}
+<style>
+    .filter-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-tabs a {
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        text-decoration: none;
+        background: var(--pico-card-background-color);
+        color: var(--pico-color);
+    }
+
+    .filter-tabs a.active {
+        background: var(--pico-primary);
+        color: white;
+    }
+
+    .order-card {
+        background: var(--pico-card-background-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--pico-muted-border-color);
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .order-info h3 {
+        margin: 0 0 0.5rem 0;
+    }
+
+    .order-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .meta-label {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        font-weight: 500;
+    }
+
+    .order-items {
+        background: var(--pico-background-color);
+        padding: 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+
+    .order-items h4 {
+        margin: 0 0 0.75rem 0;
+        font-size: 0.95rem;
+    }
+
+    .item-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem;
+        background: var(--pico-card-background-color);
+        border-radius: 4px;
+    }
+
+    .order-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .btn-success:hover {
+        background: #218838;
+    }
+
+    .btn-cancel {
+        background: #ffc107;
+        color: #000;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .btn-cancel:hover {
+        background: #e0a800;
+    }
+
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .btn-delete:hover {
+        background: #c82333;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .status-active {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-delivered {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    [data-theme="dark"] .status-active {
+        background: #856404;
+        color: #fff3cd;
+    }
+
+    [data-theme="dark"] .status-delivered {
+        background: #155724;
+        color: #d4edda;
+    }
+
+    [data-theme="dark"] .status-cancelled {
+        background: #721c24;
+        color: #f8d7da;
+    }
+
+    .total-amount {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: var(--pico-primary);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--pico-muted-color);
+    }
+
+    .link-box {
+        background: var(--pico-primary-background);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .link-box code {
+        word-break: break-all;
+        background: var(--pico-code-background-color);
+        padding: 0.5rem;
+        border-radius: 4px;
+        display: block;
+        margin-top: 0.5rem;
+    }
+</style>
+
+<h2>📦 Sipariş Yönetimi</h2>
+
+<div class="link-box">
+    <strong>📱 Müşteri Sipariş Linki:</strong>
+    <code>{{ request.url_for('order_form_page') }}</code>
+</div>
+
+<div class="filter-tabs">
+    <a href="/orders" class="{% if not current_status %}active{% endif %}">Tümü</a>
+    <a href="/orders?status=active" class="{% if current_status == 'active' %}active{% endif %}">🔵 Aktif</a>
+    <a href="/orders?status=delivered" class="{% if current_status == 'delivered' %}active{% endif %}">✅ Teslim
+        Edildi</a>
+    <a href="/orders?status=cancelled" class="{% if current_status == 'cancelled' %}active{% endif %}">❌ İptal
+        Edildi</a>
+</div>
+
+{% if orders %}
+{% for order in orders %}
+<div class="order-card">
+    <div class="order-header">
+        <div class="order-info">
+            <h3>Sipariş #{{ order.id }}</h3>
+            <span class="status-badge status-{{ order.status }}">
+                {{ order_status.get(order.status, order.status) }}
+            </span>
+        </div>
+        <div class="order-actions">
+            {% if order.status == 'active' %}
+            <form method="post" action="/orders/{{ order.id }}/status" style="display: inline;">
+                <input type="hidden" name="status" value="delivered">
+                <button type="submit" class="btn-success">✓ Teslim Edildi</button>
+            </form>
+            <form method="post" action="/orders/{{ order.id }}/status" style="display: inline;">
+                <input type="hidden" name="status" value="cancelled">
+                <button type="submit" class="btn-cancel"
+                    onclick="return confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?')">✗ İptal Et</button>
+            </form>
+            {% endif %}
+
+            <form method="post" action="/orders/{{ order.id }}/delete"
+                onsubmit="return confirm('Bu siparişi kalıcı olarak silmek istediğinizden emin misiniz?')"
+                style="display: inline;">
+                <button type="submit" class="btn-delete">🗑️ Sil</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="order-meta">
+        <div class="meta-item">
+            <span class="meta-label">Müşteri</span>
+            <span class="meta-value">{{ order.customer_name }}</span>
+            <small>{{ order.customer_phone }}</small>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Teslimat Tarihi</span>
+            <span class="meta-value">{{ order.delivery_date | date }}</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Teslimat Şekli</span>
+            <span class="meta-value">{{ delivery_types.get(order.delivery_type, order.delivery_type) }}</span>
+            {% if order.address %}
+            <small>{{ order.address }}</small>
+            {% endif %}
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Ödeme</span>
+            <span class="meta-value">{{ payment_methods.get(order.payment_method, order.payment_method) }}</span>
+        </div>
+    </div>
+
+    <div class="order-items">
+        <h4>Ürünler</h4>
+        <div class="item-list">
+            {% for item in order.items %}
+            <div class="item">
+                <span>{{ product_types.get(item.product_type, item.product_type) }} x{{ item.quantity }}</span>
+                <span>{{ item.total | currency }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <div
+            style="text-align: right; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--pico-muted-border-color);">
+            <span class="total-amount">Toplam: {{ order.total_amount | currency }}</span>
+        </div>
+    </div>
+
+    {% if order.notes %}
+    <div style="background: var(--pico-background-color); padding: 0.75rem; border-radius: 4px;">
+        <strong>Not:</strong> {{ order.notes }}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    <h3>📭 Sipariş Yok</h3>
+    <p>{% if current_status %}Bu kategoride{% else %}Henüz{% endif %} sipariş bulunmuyor.</p>
+</div>
+{% endif %}
+
+{% endblock %}

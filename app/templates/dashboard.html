@@ -27,15 +27,20 @@
 </div>
 
 <!-- Düşük Stok Uyarısı -->
-{% if low_stock_items %}
+{% if low_stock_materials or low_stock_products %}
 <div class="low-stock-alert">
     <h3>⚠️ Düşük Stok Uyarısı</h3>
     <ul>
-        {% for item in low_stock_items %}
+        {% for item in low_stock_materials %}
         <li>
-            <strong>{{ item['name'] }}</strong>:
+            <strong>{{ item['name'] }}</strong> (Hammadde):
             {{ "%.1f"|format(item['stock_quantity']) }} {{ item['unit'] }}
-            (Min: {{ "%.1f"|format(item['min_stock_level']) }} {{ item['unit'] }})
+        </li>
+        {% endfor %}
+        {% for item in low_stock_products %}
+        <li>
+            <strong>{{ PRODUCT_TYPES.get(item['product_type'], item['product_type']) }}</strong> (Ürün):
+            {{ item['stock_quantity'] }} adet
         </li>
         {% endfor %}
     </ul>
