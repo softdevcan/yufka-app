@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Satış Girişi - Yufka Takip{% endblock %}
+{% block title %}Satış Girişi - Kadıoğlu Yufka{% endblock %}
 
 {% block content %}
-<h2>Satış Girişi</h2>
+<h2>💰 Satış Girişi</h2>
 
-<div class="form-section">
-    <h2>Yeni Satış Ekle</h2>
+<div class="card">
+    <h3>Yeni Satış Ekle</h3>
     <form method="post" action="/sales">
         <div class="form-row">
-            <label for="sale_date">
+            <label for="date">
                 Tarih
-                <input type="date" id="sale_date" name="sale_date" value="{{ today }}" required>
+                <input type="date" id="date" name="date" value="{{ today }}" required>
             </label>
 
             <label for="product_type">
@@ -79,12 +79,12 @@
                 <td>{{ product_types.get(sale['product_type'], sale['product_type']) }}</td>
                 <td class="text-right">{{ sale['quantity'] }}</td>
                 <td class="text-right">{{ sale['unit_price'] | currency }}</td>
-                <td class="text-right text-success">{{ sale['total_price'] | currency }}</td>
+                <td class="text-right"><strong>{{ (sale['quantity'] * sale['unit_price']) | currency }}</strong></td>
                 <td>{{ sale['customer_name'] or '-' }}</td>
                 <td>
-                    <form method="post" action="/sales/{{ sale['id'] }}/delete" style="margin: 0;">
-                        <button type="submit" class="btn-delete"
-                            onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+                    <form method="post" action="/sales/{{ sale['id'] }}/delete" style="display: inline;"
+                        onsubmit="return confirm('Bu satışı silmek istediğinizden emin misiniz?');">
+                        <button type="submit" class="secondary">Sil</button>
                     </form>
                 </td>
             </tr>
@@ -93,19 +93,15 @@
     </table>
 </div>
 {% else %}
-<div class="empty-state">
-    <div class="icon">💰</div>
-    <p>Henüz satış kaydı yok</p>
-</div>
+<p style="text-align: center; color: var(--pico-muted-color);">Henüz satış kaydı yok.</p>
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Ürün fiyatları
     const productPrices = {
-        {% for key, price in product_prices.items() %}
-    '{{ key }}': { { price } },
+    {% for key, price in product_prices.items() %}
+    "{{ key }}": { { price } },
     {% endfor %}
     };
 
@@ -115,7 +111,6 @@
     const totalDisplay = document.getElementById('total-display');
     const calculatedTotal = document.getElementById('calculated-total');
 
-    // Ürün seçildiğinde fiyatı otomatik doldur
     productSelect.addEventListener('change', function () {
         const selectedProduct = this.value;
         if (selectedProduct && productPrices[selectedProduct]) {
@@ -124,7 +119,6 @@
         }
     });
 
-    // Sayfa yüklendiğinde ilk ürünün fiyatını doldur
     document.addEventListener('DOMContentLoaded', function () {
         if (productSelect.value && productPrices[productSelect.value]) {
             unitPriceInput.value = productPrices[productSelect.value].toFixed(2);
