@@ -14,6 +14,7 @@
                 <tr>
                     <th>Ürün</th>
                     <th class="text-right">Fiyat</th>
+                    <th>Birim</th>
                     <th class="text-right">Stok</th>
                     <th>Durum</th>
                     <th></th>
@@ -32,7 +33,8 @@
                             <button type="submit" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">Güncelle</button>
                         </form>
                     </td>
-                    <td class="text-right">{{ ps['stock_quantity'] }} adet</td>
+                    <td>{{ ps['unit'] }}</td>
+                    <td class="text-right">{{ ps['stock_quantity'] }} {{ ps['unit'] }}</td>
                     <td>
                         {% if ps['min_stock_level'] > 0 and ps['stock_quantity'] <= ps['min_stock_level'] %} <span
                             class="stock-warning">⚠️ Düşük</span>

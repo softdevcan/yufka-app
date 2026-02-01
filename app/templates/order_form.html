@@ -179,7 +179,8 @@
                 <div class="product-item">
                     <div>
                         <label for="product_{{ key }}">{{ value }}</label>
-                        <small style="color: var(--pico-muted-color);">{{ product_prices[key] }} ₺/adet</small>
+                        <small style="color: var(--pico-muted-color);">{{ product_prices[key] }} ₺/{{ product_units[key]
+                            }}</small>
                     </div>
                     <input type="number" id="product_{{ key }}" name="product_{{ key }}" min="0" value="0"
                         inputmode="numeric" class="product-quantity" data-price="{{ product_prices[key] }}">

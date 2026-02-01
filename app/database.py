@@ -96,6 +96,7 @@ async def init_db():
                 stock_quantity INTEGER NOT NULL DEFAULT 0,
                 min_stock_level INTEGER NOT NULL DEFAULT 0,
                 price REAL NOT NULL DEFAULT 0,
+                unit TEXT NOT NULL DEFAULT 'adet',
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -131,6 +132,12 @@ async def init_db():
         except:
             pass  # Kolon zaten var
 
+        # Ürün birimi kolonu ekle (migration)
+        try:
+            await db.execute("ALTER TABLE product_stock ADD COLUMN unit TEXT NOT NULL DEFAULT 'adet'")
+        except:
+            pass  # Kolon zaten var
+
         # Varsayılan malzemeleri ekle
         default_materials = [
             ("Un", "kg", 0),
@@ -145,25 +152,25 @@ async def init_db():
                 VALUES (?, ?, ?, 0, 0)
             """, (name, unit, price))
 
-        # Varsayılan ürün stoklarını ve fiyatlarını ekle
+        # Varsayılan ürün stokları, fiyatları ve birimlerini ekle
         default_products = [
-            ("yufka", 50),
-            ("sigara_boregi", 75),
-            ("manti", 100),
-            ("kadayif", 80),
+            ("yufka", 50, "adet"),
+            ("sigara_boregi", 75, "adet"),
+            ("manti", 100, "kg"),
+            ("kadayif", 80, "kg"),
         ]
-        for product_type, price in default_products:
+        for product_type, price, unit in default_products:
             await db.execute("""
-                INSERT OR IGNORE INTO product_stock (product_type, stock_quantity, min_stock_level, price)
-                VALUES (?, 0, 0, ?)
-            """, (product_type, price))
+                INSERT OR IGNORE INTO product_stock (product_type, stock_quantity, min_stock_level, price, unit)
+                VALUES (?, 0, 0, ?, ?)
+            """, (product_type, price, unit))
             
-            # Mevcut ürünlerin fiyatlarını güncelle (eğer 0 ise)
+            # Mevcut ürünlerin fiyatlarını ve birimlerini güncelle (eğer varsayılan değerlerde ise)
             await db.execute("""
                 UPDATE product_stock 
-                SET price = ? 
-                WHERE product_type = ? AND price = 0
-            """, (price, product_type))
+                SET price = ?, unit = ?
+                WHERE product_type = ? AND (price = 0 OR unit = 'adet')
+            """, (price, unit, product_type))
 
         # Siparişler tablosu
         await db.execute("""
@@ -232,4 +239,4 @@ ORDER_STATUS = {
 }
 
 # Minimum eve sipariş tutarı (TL)
-MIN_DELIVERY_AMOUNT = 100
+MIN_DELIVERY_AMOUNT = 500

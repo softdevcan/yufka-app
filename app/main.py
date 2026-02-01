@@ -721,10 +721,11 @@ async def reports_page(
 async def order_form_page(request: Request):
     """Müşteri sipariş formu (public)"""
     async with get_db_connection() as db:
-        # Ürün fiyatlarını veritabanından al
-        cursor = await db.execute("SELECT product_type, price FROM product_stock")
+        # Ürün fiyatlarını ve birimlerini veritabanından al
+        cursor = await db.execute("SELECT product_type, price, unit FROM product_stock")
         rows = await cursor.fetchall()
         product_prices = {row["product_type"]: row["price"] for row in rows}
+        product_units = {row["product_type"]: row["unit"] for row in rows}
     
     return templates.TemplateResponse(
         "order_form.html",
@@ -732,6 +733,7 @@ async def order_form_page(request: Request):
             "request": request,
             "product_types": PRODUCT_TYPES,
             "product_prices": product_prices,
+            "product_units": product_units,
             "delivery_types": DELIVERY_TYPES,
             "payment_methods": PAYMENT_METHODS,
             "min_delivery_amount": MIN_DELIVERY_AMOUNT,
