@@ -290,9 +290,10 @@ async def sales_page(request: Request):
         )
         sales = await cursor.fetchall()
 
-        # Ürün stoklarını al
+        # Ürün stoklarını ve fiyatlarını al
         cursor = await db.execute("SELECT * FROM product_stock")
         product_stocks = {row["product_type"]: row for row in await cursor.fetchall()}
+        product_prices = {row["product_type"]: row["price"] for row in product_stocks.values()}
 
     return templates.TemplateResponse(
         "sales.html",
@@ -301,6 +302,7 @@ async def sales_page(request: Request):
             "sales": sales,
             "product_types": PRODUCT_TYPES,
             "product_stocks": product_stocks,
+            "product_prices": product_prices,
             "today": date.today().isoformat(),
         },
     )

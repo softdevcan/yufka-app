@@ -102,10 +102,27 @@
 
 {% block scripts %}
 <script>
+    // Ürün fiyatları
+    const productPrices = {
+        {% for key, price in product_prices.items() %}
+    '{{ key }}': { { price } },
+    {% endfor %}
+    };
+
+    const productSelect = document.getElementById('product_type');
     const quantityInput = document.getElementById('quantity');
     const unitPriceInput = document.getElementById('unit_price');
     const totalDisplay = document.getElementById('total-display');
     const calculatedTotal = document.getElementById('calculated-total');
+
+    // Ürün seçildiğinde fiyatı otomatik doldur
+    productSelect.addEventListener('change', function () {
+        const selectedProduct = this.value;
+        if (selectedProduct && productPrices[selectedProduct]) {
+            unitPriceInput.value = productPrices[selectedProduct].toFixed(2);
+            calculateTotal();
+        }
+    });
 
     function calculateTotal() {
         const quantity = parseFloat(quantityInput.value) || 0;

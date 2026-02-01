@@ -14,19 +14,25 @@
 
 <body>
     <header>
-        <div class="container">
-            <h1>🫓 Kadıoğlu Yufka</h1>
-            <nav>
-                <a href="/">Ana Sayfa</a>
-                <a href="/production">Üretim</a>
-                <a href="/sales">Satış</a>
-                <a href="/orders">Siparişler</a>
-                <a href="/stock">Stok</a>
-                <a href="/materials">Malzeme</a>
-                <a href="/reports">Rapor</a>
-                <a href="/logout">Çıkış</a>
-            </nav>
-        </div>
+        <nav>
+            <ul>
+                <li><strong>Kadıoğlu Yufka</strong></li>
+            </ul>
+            <ul>
+                <li><a href="/" {% if request.url.path=='/' %}aria-current="page" {% endif %}>Ana Sayfa</a></li>
+                <li><a href="/production" {% if request.url.path=='/production' %}aria-current="page" {% endif
+                        %}>Üretim</a></li>
+                <li><a href="/sales" {% if request.url.path=='/sales' %}aria-current="page" {% endif %}>Satış</a></li>
+                <li><a href="/materials" {% if request.url.path=='/materials' %}aria-current="page" {% endif
+                        %}>Malzemeler</a></li>
+                <li><a href="/stock" {% if request.url.path=='/stock' %}aria-current="page" {% endif %}>Stok</a></li>
+                <li><a href="/orders" {% if request.url.path.startswith('/orders') or request.url.path=='/order'
+                        %}aria-current="page" {% endif %}>Siparişler</a></li>
+                <li><a href="/reports" {% if request.url.path=='/reports' %}aria-current="page" {% endif %}>Raporlar</a>
+                </li>
+                <li><a href="/logout">Çıkış</a></li>
+            </ul>
+        </nav>
     </header>
 
     <main class="container">
