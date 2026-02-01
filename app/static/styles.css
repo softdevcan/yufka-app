@@ -1,0 +1,574 @@
+/* Yufka Takip - Custom Styles */
+
+:root {
+    --primary-color: #d35400;
+    --primary-hover: #e67e22;
+    --success-color: #27ae60;
+    --danger-color: #c0392b;
+    --warning-color: #f39c12;
+}
+
+[data-theme="light"] {
+    --pico-primary: var(--primary-color);
+    --pico-primary-hover: var(--primary-hover);
+}
+
+[data-theme="dark"] {
+    --pico-primary: var(--primary-hover);
+    --pico-primary-hover: var(--primary-color);
+}
+
+/* Mobile-first layout */
+body {
+    padding-bottom: 80px;
+}
+
+.container {
+    max-width: 800px;
+    padding: 0 1rem;
+}
+
+/* Header */
+header {
+    background: var(--pico-primary);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0 0 0.5rem 0.5rem;
+}
+
+header h1 {
+    color: white;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+header nav {
+    margin-top: 0.5rem;
+}
+
+header nav a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    margin-right: 1rem;
+    font-size: 0.9rem;
+}
+
+header nav a:hover {
+    color: white;
+}
+
+/* Quick action buttons */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 0.75rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-height: 100px;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.quick-action-btn .icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.btn-production {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.btn-sales {
+    background: linear-gradient(135deg, #27ae60, #1e8449);
+    color: white;
+}
+
+.btn-materials {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+}
+
+.btn-reports {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    color: white;
+}
+
+.btn-stock {
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    color: white;
+}
+
+/* Summary cards */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    background: var(--pico-card-background-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card .label {
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+    margin-bottom: 0.25rem;
+}
+
+.summary-card .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--pico-primary);
+}
+
+.summary-card.revenue .value {
+    color: var(--success-color);
+}
+
+/* Activity list */
+.activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    gap: 0.75rem;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.activity-icon.production {
+    background: rgba(52, 152, 219, 0.15);
+}
+
+.activity-icon.sales {
+    background: rgba(39, 174, 96, 0.15);
+}
+
+.activity-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.activity-meta {
+    font-size: 0.8rem;
+    color: var(--pico-muted-color);
+    margin: 0;
+}
+
+.activity-value {
+    font-weight: 600;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* Forms */
+.form-section {
+    background: var(--pico-card-background-color);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h2 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--pico-primary);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 480px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Large touch-friendly inputs */
+input, select, textarea {
+    font-size: 1rem !important;
+    padding: 0.75rem !important;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 1rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+/* Data tables */
+.data-table {
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+}
+
+.data-table table {
+    font-size: 0.9rem;
+}
+
+.data-table th {
+    white-space: nowrap;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table td {
+    vertical-align: middle;
+}
+
+/* Delete button */
+.btn-delete {
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.btn-delete:hover {
+    background: #a93226;
+}
+
+/* Report filters */
+.report-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.report-filters a,
+.report-filters button {
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    border: 2px solid var(--pico-primary);
+    background: transparent;
+    color: var(--pico-primary);
+    cursor: pointer;
+}
+
+.report-filters a.active,
+.report-filters button.active {
+    background: var(--pico-primary);
+    color: white;
+}
+
+/* Login page */
+.login-container {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.login-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-logo h1 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.login-logo p {
+    color: var(--pico-muted-color);
+    margin: 0.5rem 0 0;
+}
+
+/* Error message */
+.error-message {
+    background: rgba(192, 57, 43, 0.1);
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Theme toggle */
+.theme-toggle {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+/* Report summary */
+.report-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.report-card {
+    background: var(--pico-card-background-color);
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.report-card h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    color: var(--pico-muted-color);
+}
+
+.report-card .stat {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--pico-primary);
+}
+
+.report-card.success .stat {
+    color: var(--success-color);
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--pico-muted-color);
+}
+
+.empty-state .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Utility classes */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-success {
+    color: var(--success-color);
+}
+
+.text-danger {
+    color: var(--danger-color);
+}
+
+.mb-1 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-2 {
+    margin-bottom: 1rem;
+}
+
+.mt-1 {
+    margin-top: 0.5rem;
+}
+
+.mt-2 {
+    margin-top: 1rem;
+}
+
+/* Stock specific styles */
+.low-stock-alert {
+    background: rgba(243, 156, 18, 0.15);
+    border: 2px solid var(--warning-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.low-stock-alert h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: var(--warning-color);
+}
+
+.low-stock-alert ul {
+    margin: 0 0 0.75rem;
+    padding-left: 1.25rem;
+}
+
+.low-stock-alert li {
+    margin-bottom: 0.25rem;
+}
+
+.btn-stock-add {
+    display: inline-block;
+    background: var(--warning-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.btn-stock-add:hover {
+    background: #e67e22;
+    color: white;
+}
+
+/* Materials fieldset */
+.materials-fieldset {
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.materials-fieldset legend {
+    font-weight: 600;
+    padding: 0 0.5rem;
+}
+
+.materials-fieldset .hint {
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+    margin: 0 0 1rem;
+}
+
+.materials-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+    .materials-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.material-input label {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.material-input .stock-info {
+    font-weight: normal;
+    color: var(--pico-muted-color);
+}
+
+.material-input .stock-info.low-stock {
+    color: var(--warning-color);
+}
+
+.input-with-unit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.input-with-unit input {
+    flex: 1;
+    padding: 0.5rem !important;
+}
+
+.input-with-unit .unit {
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+    min-width: 25px;
+}
+
+/* Stock status badges */
+.stock-warning {
+    color: var(--warning-color);
+}
+
+.stock-danger {
+    color: var(--danger-color);
+}
+
+.stock-ok {
+    color: var(--success-color);
+}
+
+/* Hint text */
+.hint {
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+    margin-bottom: 1rem;
+}
+
+.hint a {
+    color: var(--pico-primary);
+}
+
+/* Secondary button */
+button.secondary {
+    background: var(--pico-secondary-background);
+    border-color: var(--pico-secondary-border);
+}

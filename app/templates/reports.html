@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Raporlar - Yufka Takip{% endblock %}
+
+{% block content %}
+<h2>Raporlar</h2>
+
+<div class="report-filters">
+    <a href="/reports?period=today" class="{% if period == 'today' %}active{% endif %}">Bugün</a>
+    <a href="/reports?period=week" class="{% if period == 'week' %}active{% endif %}">Bu Hafta</a>
+    <a href="/reports?period=month" class="{% if period == 'month' %}active{% endif %}">Bu Ay</a>
+    <button type="button" onclick="toggleCustomDate()" class="{% if period == 'custom' %}active{% endif %}">Özel Tarih</button>
+</div>
+
+<form id="custom-date-form" method="get" action="/reports" style="display: {% if period == 'custom' %}block{% else %}none{% endif %}; margin-bottom: 1.5rem;">
+    <input type="hidden" name="period" value="custom">
+    <div class="form-row">
+        <label for="start_date">
+            Başlangıç
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}" required>
+        </label>
+        <label for="end_date">
+            Bitiş
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}" required>
+        </label>
+    </div>
+    <button type="submit" style="width: auto; padding: 0.5rem 1rem !important;">Rapor Getir</button>
+</form>
+
+<p class="text-center mb-2">
+    <strong>{{ start_date | date }} - {{ end_date | date }}</strong>
+</p>
+
+<div class="report-summary">
+    <div class="report-card success">
+        <h3>Toplam Gelir</h3>
+        <div class="stat">{{ total_revenue | currency }}</div>
+    </div>
+
+    <div class="report-card">
+        <h3>Toplam Üretim</h3>
+        <div class="stat">
+            {% set total_prod = production_summary | sum(attribute='total') %}
+            {{ total_prod }} adet
+        </div>
+    </div>
+
+    <div class="report-card">
+        <h3>Toplam Satış</h3>
+        <div class="stat">
+            {% set total_sales = sales_summary | sum(attribute='total_qty') %}
+            {{ total_sales }} adet
+        </div>
+    </div>
+</div>
+
+{% if production_summary %}
+<h3>Ürüne Göre Üretim</h3>
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Ürün</th>
+                <th class="text-right">Toplam Adet</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in production_summary %}
+            <tr>
+                <td>{{ product_types.get(item['product_type'], item['product_type']) }}</td>
+                <td class="text-right"><strong>{{ item['total'] }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if sales_summary %}
+<h3>Ürüne Göre Satış</h3>
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Ürün</th>
+                <th class="text-right">Adet</th>
+                <th class="text-right">Gelir</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in sales_summary %}
+            <tr>
+                <td>{{ product_types.get(item['product_type'], item['product_type']) }}</td>
+                <td class="text-right">{{ item['total_qty'] }}</td>
+                <td class="text-right text-success"><strong>{{ item['total_revenue'] | currency }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if daily_sales or daily_production %}
+<h3>Günlük Detay</h3>
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Tarih</th>
+                <th class="text-right">Üretim</th>
+                <th class="text-right">Satış</th>
+                <th class="text-right">Gelir</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set daily_data = {} %}
+            {% for item in daily_production %}
+                {% set _ = daily_data.update({item['date']: {'production': item['production_qty'], 'sales': 0, 'revenue': 0}}) %}
+            {% endfor %}
+            {% for item in daily_sales %}
+                {% if item['date'] in daily_data %}
+                    {% set _ = daily_data[item['date']].update({'sales': item['sales_qty'], 'revenue': item['revenue']}) %}
+                {% else %}
+                    {% set _ = daily_data.update({item['date']: {'production': 0, 'sales': item['sales_qty'], 'revenue': item['revenue']}}) %}
+                {% endif %}
+            {% endfor %}
+            {% for date in daily_data.keys() | sort(reverse=true) %}
+            <tr>
+                <td>{{ date | date }}</td>
+                <td class="text-right">{{ daily_data[date]['production'] }} adet</td>
+                <td class="text-right">{{ daily_data[date]['sales'] }} adet</td>
+                <td class="text-right text-success">{{ daily_data[date]['revenue'] | currency }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if not production_summary and not sales_summary %}
+<div class="empty-state">
+    <div class="icon">📊</div>
+    <p>Bu dönem için veri bulunmuyor</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleCustomDate() {
+        const form = document.getElementById('custom-date-form');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+</script>
+{% endblock %}

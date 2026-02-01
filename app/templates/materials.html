@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Malzeme Yönetimi - Yufka Takip{% endblock %}
+
+{% block content %}
+<h2>Malzeme Yönetimi</h2>
+
+<div class="form-section">
+    <h2>Yeni Malzeme Ekle</h2>
+    <form method="post" action="/materials">
+        <div class="form-row">
+            <label for="name">
+                Malzeme Adı
+                <input type="text" id="name" name="name" required placeholder="örn: Un, Yağ, Tuz...">
+            </label>
+
+            <label for="unit">
+                Birim
+                <select id="unit" name="unit" required>
+                    <option value="kg">Kilogram (kg)</option>
+                    <option value="lt">Litre (lt)</option>
+                    <option value="adet">Adet</option>
+                    <option value="paket">Paket</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="form-row">
+            <label for="price">
+                Birim Fiyat (₺)
+                <input type="number" id="price" name="price" min="0" step="0.01" value="0" inputmode="decimal">
+            </label>
+
+            <label for="min_stock_level">
+                Minimum Stok Seviyesi
+                <input type="number" id="min_stock_level" name="min_stock_level" min="0" step="0.1" value="0" inputmode="decimal">
+            </label>
+        </div>
+
+        <button type="submit">Malzeme Ekle</button>
+    </form>
+</div>
+
+<p class="hint">
+    💡 Stok girişi ve düzeltme için <a href="/stock">Stok Yönetimi</a> sayfasını kullanın.
+</p>
+
+<h3>Malzeme Listesi</h3>
+
+{% if materials %}
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Malzeme</th>
+                <th>Birim</th>
+                <th class="text-right">Stok</th>
+                <th class="text-right">Min.</th>
+                <th class="text-right">Fiyat</th>
+                <th>Güncelle</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in materials %}
+            <tr>
+                <td>
+                    <strong>{{ material['name'] }}</strong>
+                    {% if material['min_stock_level'] > 0 and material['stock_quantity'] <= material['min_stock_level'] %}
+                    <span class="stock-warning">⚠️</span>
+                    {% endif %}
+                </td>
+                <td>{{ material['unit'] }}</td>
+                <td class="text-right {% if material['stock_quantity'] <= 0 %}text-danger{% endif %}">
+                    {{ "%.1f"|format(material['stock_quantity']) }}
+                </td>
+                <td class="text-right">{{ "%.1f"|format(material['min_stock_level']) }}</td>
+                <td class="text-right">{{ material['price'] | currency }}</td>
+                <td>
+                    <form method="post" action="/materials/{{ material['id'] }}/update" style="margin: 0; display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                        <input type="number" name="price" value="{{ material['price'] }}" min="0" step="0.01"
+                               style="width: 80px; padding: 0.25rem !important; font-size: 0.85rem !important;" inputmode="decimal" placeholder="Fiyat">
+                        <input type="number" name="min_stock_level" value="{{ material['min_stock_level'] }}" min="0" step="0.1"
+                               style="width: 60px; padding: 0.25rem !important; font-size: 0.85rem !important;" inputmode="decimal" placeholder="Min">
+                        <button type="submit" style="padding: 0.25rem 0.5rem !important; font-size: 0.8rem !important; margin: 0;">
+                            ✓
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" action="/materials/{{ material['id'] }}/delete" style="margin: 0;">
+                        <button type="submit" class="btn-delete" onclick="return confirm('{{ material['name'] }} malzemesini silmek istediğinize emin misiniz? Tüm stok hareketleri de silinecek.')">Sil</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon">🧾</div>
+    <p>Henüz malzeme kaydı yok</p>
+</div>
+{% endif %}
+{% endblock %}

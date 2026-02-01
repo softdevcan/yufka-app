@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Stok Yönetimi - Yufka Takip{% endblock %}
+
+{% block content %}
+<h2>Stok Yönetimi</h2>
+
+<!-- Mevcut Stok Durumu -->
+<div class="form-section">
+    <h2>Mevcut Stok</h2>
+    {% if materials %}
+    <div class="data-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Malzeme</th>
+                    <th class="text-right">Stok</th>
+                    <th class="text-right">Min. Seviye</th>
+                    <th>Durum</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in materials %}
+                <tr>
+                    <td><strong>{{ m['name'] }}</strong></td>
+                    <td class="text-right">{{ "%.2f"|format(m['stock_quantity']) }} {{ m['unit'] }}</td>
+                    <td class="text-right">{{ "%.2f"|format(m['min_stock_level']) }} {{ m['unit'] }}</td>
+                    <td>
+                        {% if m['min_stock_level'] > 0 and m['stock_quantity'] <= m['min_stock_level'] %}
+                        <span class="stock-warning">⚠️ Düşük</span>
+                        {% elif m['stock_quantity'] <= 0 %}
+                        <span class="stock-danger">❌ Tükendi</span>
+                        {% else %}
+                        <span class="stock-ok">✓ Yeterli</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">🧾</div>
+        <p>Henüz malzeme eklenmemiş. <a href="/materials">Malzeme ekleyin</a></p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Stok Girişi -->
+<div class="form-section">
+    <h2>Stok Girişi (Malzeme Alımı)</h2>
+    <form method="post" action="/stock/add">
+        <div class="form-row">
+            <label for="material_id">
+                Malzeme
+                <select id="material_id" name="material_id" required>
+                    <option value="">Seçiniz...</option>
+                    {% for m in materials %}
+                    <option value="{{ m['id'] }}">{{ m['name'] }} ({{ m['unit'] }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label for="quantity">
+                Miktar
+                <input type="number" id="quantity" name="quantity" min="0.01" step="0.01" required inputmode="decimal">
+            </label>
+        </div>
+
+        <label for="notes">
+            Not (Opsiyonel)
+            <input type="text" id="notes" name="notes" placeholder="örn: Firma X'den alındı">
+        </label>
+
+        <button type="submit">Stok Ekle</button>
+    </form>
+</div>
+
+<!-- Stok Düzeltme -->
+<div class="form-section">
+    <h2>Stok Düzeltme (Sayım Sonrası)</h2>
+    <form method="post" action="/stock/adjust">
+        <div class="form-row">
+            <label for="adjust_material_id">
+                Malzeme
+                <select id="adjust_material_id" name="material_id" required>
+                    <option value="">Seçiniz...</option>
+                    {% for m in materials %}
+                    <option value="{{ m['id'] }}">{{ m['name'] }} (Mevcut: {{ "%.2f"|format(m['stock_quantity']) }} {{ m['unit'] }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label for="new_quantity">
+                Yeni Miktar
+                <input type="number" id="new_quantity" name="new_quantity" min="0" step="0.01" required inputmode="decimal">
+            </label>
+        </div>
+
+        <label for="adjust_notes">
+            Düzeltme Sebebi
+            <input type="text" id="adjust_notes" name="notes" placeholder="örn: Sayım sonucu düzeltme">
+        </label>
+
+        <button type="submit" class="secondary">Stok Düzelt</button>
+    </form>
+</div>
+
+<!-- Son Hareketler -->
+<h3>Son Stok Hareketleri</h3>
+
+{% if movements %}
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Tarih</th>
+                <th>Malzeme</th>
+                <th>İşlem</th>
+                <th class="text-right">Miktar</th>
+                <th>Not</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mov in movements %}
+            <tr>
+                <td>{{ mov['created_at'] | date }}</td>
+                <td>{{ mov['material_name'] }}</td>
+                <td>{{ movement_types.get(mov['movement_type'], mov['movement_type']) }}</td>
+                <td class="text-right {% if mov['quantity'] > 0 %}text-success{% else %}text-danger{% endif %}">
+                    {% if mov['quantity'] > 0 %}+{% endif %}{{ "%.2f"|format(mov['quantity']) }} {{ mov['material_unit'] }}
+                </td>
+                <td>{{ mov['notes'] or '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon">📋</div>
+    <p>Henüz stok hareketi yok</p>
+</div>
+{% endif %}
+{% endblock %}

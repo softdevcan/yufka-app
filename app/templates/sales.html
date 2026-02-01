@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Satış Girişi - Yufka Takip{% endblock %}
+
+{% block content %}
+<h2>Satış Girişi</h2>
+
+<div class="form-section">
+    <h2>Yeni Satış Ekle</h2>
+    <form method="post" action="/sales">
+        <div class="form-row">
+            <label for="sale_date">
+                Tarih
+                <input type="date" id="sale_date" name="sale_date" value="{{ today }}" required>
+            </label>
+
+            <label for="product_type">
+                Ürün
+                <select id="product_type" name="product_type" required>
+                    {% for key, value in product_types.items() %}
+                    <option value="{{ key }}">{{ value }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+
+        <div class="form-row">
+            <label for="quantity">
+                Adet
+                <input type="number" id="quantity" name="quantity" min="1" required inputmode="numeric">
+            </label>
+
+            <label for="unit_price">
+                Birim Fiyat (₺)
+                <input type="number" id="unit_price" name="unit_price" min="0" step="0.01" required inputmode="decimal">
+            </label>
+        </div>
+
+        <div class="summary-card mb-2" id="total-display" style="display: none;">
+            <div class="label">Toplam Tutar</div>
+            <div class="value" id="calculated-total">0,00 ₺</div>
+        </div>
+
+        <label for="customer_name">
+            Müşteri Adı (Opsiyonel)
+            <input type="text" id="customer_name" name="customer_name" placeholder="Müşteri adı...">
+        </label>
+
+        <label for="notes">
+            Not (Opsiyonel)
+            <textarea id="notes" name="notes" rows="2" placeholder="Varsa ekstra bilgi..."></textarea>
+        </label>
+
+        <button type="submit">Satış Kaydet</button>
+    </form>
+</div>
+
+<h3>Son Satışlar</h3>
+
+{% if sales %}
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Tarih</th>
+                <th>Ürün</th>
+                <th class="text-right">Adet</th>
+                <th class="text-right">Birim</th>
+                <th class="text-right">Toplam</th>
+                <th>Müşteri</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+            <tr>
+                <td>{{ sale['date'] | date }}</td>
+                <td>{{ product_types.get(sale['product_type'], sale['product_type']) }}</td>
+                <td class="text-right">{{ sale['quantity'] }}</td>
+                <td class="text-right">{{ sale['unit_price'] | currency }}</td>
+                <td class="text-right text-success">{{ sale['total_price'] | currency }}</td>
+                <td>{{ sale['customer_name'] or '-' }}</td>
+                <td>
+                    <form method="post" action="/sales/{{ sale['id'] }}/delete" style="margin: 0;">
+                        <button type="submit" class="btn-delete" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon">💰</div>
+    <p>Henüz satış kaydı yok</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const quantityInput = document.getElementById('quantity');
+    const unitPriceInput = document.getElementById('unit_price');
+    const totalDisplay = document.getElementById('total-display');
+    const calculatedTotal = document.getElementById('calculated-total');
+
+    function calculateTotal() {
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const unitPrice = parseFloat(unitPriceInput.value) || 0;
+        const total = quantity * unitPrice;
+
+        if (total > 0) {
+            totalDisplay.style.display = 'block';
+            calculatedTotal.textContent = total.toLocaleString('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + ' ₺';
+        } else {
+            totalDisplay.style.display = 'none';
+        }
+    }
+
+    quantityInput.addEventListener('input', calculateTotal);
+    unitPriceInput.addEventListener('input', calculateTotal);
+</script>
+{% endblock %}

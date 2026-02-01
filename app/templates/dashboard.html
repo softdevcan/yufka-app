@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Ana Sayfa - Yufka Takip{% endblock %}
+
+{% block content %}
+<h2>Bugünün Özeti</h2>
+
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="label">Toplam Üretim</div>
+        <div class="value">
+            {% set total_prod = today_production | sum(attribute='total') %}
+            {{ total_prod }} adet
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Toplam Satış</div>
+        <div class="value">
+            {% set total_sales = today_sales | sum(attribute='total') %}
+            {{ total_sales }} adet
+        </div>
+    </div>
+    <div class="summary-card revenue" style="grid-column: span 2;">
+        <div class="label">Bugünkü Gelir</div>
+        <div class="value">{{ today_revenue | currency }}</div>
+    </div>
+</div>
+
+<!-- Düşük Stok Uyarısı -->
+{% if low_stock_items %}
+<div class="low-stock-alert">
+    <h3>⚠️ Düşük Stok Uyarısı</h3>
+    <ul>
+        {% for item in low_stock_items %}
+        <li>
+            <strong>{{ item['name'] }}</strong>:
+            {{ "%.1f"|format(item['stock_quantity']) }} {{ item['unit'] }}
+            (Min: {{ "%.1f"|format(item['min_stock_level']) }} {{ item['unit'] }})
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="/stock" class="btn-stock-add">Stok Ekle</a>
+</div>
+{% endif %}
+
+<h2>Hızlı İşlemler</h2>
+
+<div class="quick-actions">
+    <a href="/production" class="quick-action-btn btn-production">
+        <span class="icon">📦</span>
+        <span>Üretim Girişi</span>
+    </a>
+    <a href="/sales" class="quick-action-btn btn-sales">
+        <span class="icon">💰</span>
+        <span>Satış Girişi</span>
+    </a>
+    <a href="/stock" class="quick-action-btn btn-stock">
+        <span class="icon">📦</span>
+        <span>Stok Girişi</span>
+    </a>
+    <a href="/reports" class="quick-action-btn btn-reports">
+        <span class="icon">📊</span>
+        <span>Raporlar</span>
+    </a>
+</div>
+
+{% if today_production %}
+<h3>Bugünkü Üretim</h3>
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Ürün</th>
+                <th class="text-right">Adet</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in today_production %}
+            <tr>
+                <td>{{ product_types.get(item['product_type'], item['product_type']) }}</td>
+                <td class="text-right">{{ item['total'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if today_sales %}
+<h3>Bugünkü Satış</h3>
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Ürün</th>
+                <th class="text-right">Adet</th>
+                <th class="text-right">Gelir</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in today_sales %}
+            <tr>
+                <td>{{ product_types.get(item['product_type'], item['product_type']) }}</td>
+                <td class="text-right">{{ item['total'] }}</td>
+                <td class="text-right">{{ item['revenue'] | currency }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<h3>Son İşlemler</h3>
+
+{% if recent_activities %}
+<ul class="activity-list">
+    {% for activity in recent_activities %}
+    <li class="activity-item">
+        <div class="activity-icon {{ activity['type'] }}">
+            {% if activity['type'] == 'production' %}📦{% else %}💰{% endif %}
+        </div>
+        <div class="activity-details">
+            <p class="activity-title">
+                {{ product_types.get(activity['product_type'], activity['product_type']) }}
+            </p>
+            <p class="activity-meta">
+                {{ activity['date'] | date }} -
+                {% if activity['type'] == 'production' %}Üretim{% else %}Satış{% endif %}
+            </p>
+        </div>
+        <div class="activity-value">
+            {% if activity['type'] == 'sales' %}
+            <span class="text-success">{{ activity['total_price'] | currency }}</span>
+            {% else %}
+            {{ activity['quantity'] }} adet
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="empty-state">
+    <div class="icon">📋</div>
+    <p>Henüz işlem bulunmuyor</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Üretim Girişi - Yufka Takip{% endblock %}
+
+{% block content %}
+<h2>Üretim Girişi</h2>
+
+<div class="form-section">
+    <h2>Yeni Üretim Ekle</h2>
+    <form method="post" action="/production">
+        <div class="form-row">
+            <label for="production_date">
+                Tarih
+                <input type="date" id="production_date" name="production_date" value="{{ today }}" required>
+            </label>
+
+            <label for="product_type">
+                Ürün
+                <select id="product_type" name="product_type" required>
+                    {% for key, value in product_types.items() %}
+                    <option value="{{ key }}">{{ value }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+
+        <label for="quantity">
+            Adet
+            <input type="number" id="quantity" name="quantity" min="1" required inputmode="numeric">
+        </label>
+
+        <!-- Malzeme Kullanımı -->
+        <fieldset class="materials-fieldset">
+            <legend>Kullanılan Malzemeler (Opsiyonel)</legend>
+            <p class="hint">Stoktan düşülecek miktarları girin</p>
+
+            <div class="materials-grid">
+                {% for m in materials %}
+                <div class="material-input">
+                    <label for="material_{{ m['id'] }}">
+                        {{ m['name'] }}
+                        <small class="stock-info {% if m['stock_quantity'] <= m['min_stock_level'] and m['min_stock_level'] > 0 %}low-stock{% endif %}">
+                            (Stok: {{ "%.1f"|format(m['stock_quantity']) }} {{ m['unit'] }})
+                        </small>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number"
+                               id="material_{{ m['id'] }}"
+                               name="material_{{ m['id'] }}"
+                               min="0"
+                               step="0.1"
+                               placeholder="0"
+                               inputmode="decimal">
+                        <span class="unit">{{ m['unit'] }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </fieldset>
+
+        <label for="notes">
+            Not (Opsiyonel)
+            <textarea id="notes" name="notes" rows="2" placeholder="Varsa ekstra bilgi..."></textarea>
+        </label>
+
+        <button type="submit">Üretim Kaydet</button>
+    </form>
+</div>
+
+<h3>Son Üretimler</h3>
+
+{% if productions %}
+<div class="data-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Tarih</th>
+                <th>Ürün</th>
+                <th class="text-right">Adet</th>
+                <th>Malzeme</th>
+                <th>Not</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prod in productions %}
+            <tr>
+                <td>{{ prod['date'] | date }}</td>
+                <td>{{ product_types.get(prod['product_type'], prod['product_type']) }}</td>
+                <td class="text-right">{{ prod['quantity'] }}</td>
+                <td>
+                    {% if prod['materials_used'] %}
+                    <small>✓ Var</small>
+                    {% else %}
+                    <small>-</small>
+                    {% endif %}
+                </td>
+                <td>{{ prod['notes'] or '-' }}</td>
+                <td>
+                    <form method="post" action="/production/{{ prod['id'] }}/delete" style="margin: 0;">
+                        <button type="submit" class="btn-delete" onclick="return confirm('Bu üretimi silmek istediğinize emin misiniz? Kullanılan malzemeler stoğa geri eklenecek.')">Sil</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="icon">📦</div>
+    <p>Henüz üretim kaydı yok</p>
+</div>
+{% endif %}
+{% endblock %}

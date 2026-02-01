@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#d35400">
+    <title>Giriş - Yufka Takip</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <main class="container login-container">
+        <div class="login-logo">
+            <h1>🫓 Yufka Takip</h1>
+            <p>Üretim ve Satış Takip Sistemi</p>
+        </div>
+
+        {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/login">
+            <label for="username">
+                Kullanıcı Adı
+                <input type="text" id="username" name="username" required autocomplete="username" autofocus>
+            </label>
+
+            <label for="password">
+                Şifre
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+            </label>
+
+            <button type="submit">Giriş Yap</button>
+        </form>
+    </main>
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Tema değiştir">
+        <span id="theme-icon">🌙</span>
+    </button>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('theme-icon');
+            icon.textContent = theme === 'light' ? '🌙' : '☀️';
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    </script>
+</body>
+</html>
