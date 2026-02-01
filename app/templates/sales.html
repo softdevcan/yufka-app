@@ -99,11 +99,7 @@
 
 {% block scripts %}
 <script>
-    const productPrices = {
-    {% for key, price in product_prices.items() %}
-    "{{ key }}": { { price } },
-    {% endfor %}
-    };
+    const productPrices = {{ product_prices | tojson }};
 
     const productSelect = document.getElementById('product_type');
     const quantityInput = document.getElementById('quantity');

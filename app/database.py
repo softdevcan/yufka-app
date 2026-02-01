@@ -154,10 +154,10 @@ async def init_db():
 
         # Varsayılan ürün stokları, fiyatları ve birimlerini ekle
         default_products = [
-            ("yufka", 50, "adet"),
-            ("sigara_boregi", 75, "adet"),
-            ("manti", 100, "kg"),
-            ("kadayif", 80, "kg"),
+            ("yufka", 30, "adet"),
+            ("sigara_boregi", 100, "adet"),
+            ("manti", 300, "kg"),
+            ("kadayif", 200, "kg"),
         ]
         for product_type, price, unit in default_products:
             await db.execute("""
