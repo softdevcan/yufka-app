@@ -108,7 +108,7 @@
             <h2>Siparişiniz Alındı!</h2>
             <p>Sipariş numaranız: <strong>#{{ order_id }}</strong></p>
             <p>En kısa sürede sizinle iletişime geçeceğiz.</p>
-            <a href="/siparis" role="button">Yeni Sipariş Ver</a>
+            <a href="/order" role="button">Yeni Sipariş Ver</a>
         </div>
         {% else %}
 
@@ -118,7 +118,7 @@
         </div>
         {% endif %}
 
-        <form method="post" action="/siparis" id="order-form">
+        <form method="post" action="/order" id="order-form">
             <div class="form-section">
                 <h2>Teslimat Bilgileri</h2>
 
