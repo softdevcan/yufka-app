@@ -4,12 +4,23 @@ Yufka üretim ve satış takip sistemi.
 
 ## Özellikler
 
-- **Dashboard**: Günlük özet, hızlı erişim butonları, son işlemler
-- **Üretim Girişi**: Yufka, mantı, kadayıf, sigara böreği üretim kaydı
+- **Dashboard**: Günlük özet, hızlı erişim butonları, son işlemler, düşük stok uyarıları
+- **Üretim Girişi**: Yufka, mantı, kadayıf, sigara böreği üretim kaydı + malzeme kullanımı
 - **Satış Girişi**: Satış kaydı, otomatik toplam hesaplama
-- **Malzeme Yönetimi**: Malzeme listesi ve fiyat güncelleme
+- **Stok Takibi**: Malzeme stok girişi, stok düzeltme, hareket geçmişi
+- **Malzeme Yönetimi**: Malzeme listesi, fiyat ve minimum stok seviyesi belirleme
 - **Raporlar**: Günlük, haftalık, aylık ve özel tarih aralığı raporları
 - **Tema Desteği**: Light/Dark tema
+
+### Stok Takibi
+
+- Üretim girişinde kullanılan malzemeler seçilebilir
+- Üretim kaydedildiğinde stoktan otomatik düşüm
+- Üretim silindiğinde stok geri eklenir
+- Minimum stok seviyesi tanımlanabilir
+- Dashboard'da düşük stok uyarıları
+- Stok giriş ve düzeltme işlemleri
+- Tüm stok hareketlerinin kaydı
 
 ## Teknolojiler
 
