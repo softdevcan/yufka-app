@@ -783,12 +783,20 @@ async def submit_order(request: Request):
     
     # Eve teslimat için minimum tutar kontrolü
     if delivery_type == "eve_gelsin" and total_amount < MIN_DELIVERY_AMOUNT:
+        async with get_db_connection() as db:
+            cursor = await db.execute("SELECT product_type, price, unit FROM product_stock")
+            rows = await cursor.fetchall()
+            product_prices = {row["product_type"]: row["price"] for row in rows}
+            product_units = {row["product_type"]: row["unit"] for row in rows}
+        
         return templates.TemplateResponse(
             "order_form.html",
             {
                 "request": request,
                 "error": f"Eve teslimat için minimum sipariş tutarı {MIN_DELIVERY_AMOUNT} TL olmalıdır.",
                 "product_types": PRODUCT_TYPES,
+                "product_prices": product_prices,
+                "product_units": product_units,
                 "delivery_types": DELIVERY_TYPES,
                 "payment_methods": PAYMENT_METHODS,
                 "min_delivery_amount": MIN_DELIVERY_AMOUNT,
@@ -798,12 +806,20 @@ async def submit_order(request: Request):
         )
     
     if not items:
+        async with get_db_connection() as db:
+            cursor = await db.execute("SELECT product_type, price, unit FROM product_stock")
+            rows = await cursor.fetchall()
+            product_prices = {row["product_type"]: row["price"] for row in rows}
+            product_units = {row["product_type"]: row["unit"] for row in rows}
+        
         return templates.TemplateResponse(
             "order_form.html",
             {
                 "request": request,
                 "error": "Lütfen en az bir ürün seçin.",
                 "product_types": PRODUCT_TYPES,
+                "product_prices": product_prices,
+                "product_units": product_units,
                 "delivery_types": DELIVERY_TYPES,
                 "payment_methods": PAYMENT_METHODS,
                 "min_delivery_amount": MIN_DELIVERY_AMOUNT,
@@ -813,7 +829,7 @@ async def submit_order(request: Request):
         )
     
     async with get_db_connection() as db:
-        await db.execute(
+        cursor = await db.execute(
             """INSERT INTO orders (order_date, delivery_date, delivery_type, customer_name, customer_phone, 
                                    address, items, total_amount, payment_method, notes)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -830,14 +846,25 @@ async def submit_order(request: Request):
                 notes or None,
             ),
         )
+        order_id = cursor.lastrowid
         await db.commit()
+    
+    # Ürün fiyatlarını ve birimlerini tekrar al (template için)
+    async with get_db_connection() as db:
+        cursor = await db.execute("SELECT product_type, price, unit FROM product_stock")
+        rows = await cursor.fetchall()
+        product_prices = {row["product_type"]: row["price"] for row in rows}
+        product_units = {row["product_type"]: row["unit"] for row in rows}
     
     return templates.TemplateResponse(
         "order_form.html",
         {
             "request": request,
-            "success": "Siparişiniz başarıyla alındı! En kısa sürede size dönüş yapacağız.",
+            "success": True,
+            "order_id": order_id,
             "product_types": PRODUCT_TYPES,
+            "product_prices": product_prices,
+            "product_units": product_units,
             "delivery_types": DELIVERY_TYPES,
             "payment_methods": PAYMENT_METHODS,
             "min_delivery_amount": MIN_DELIVERY_AMOUNT,
@@ -878,8 +905,15 @@ async def orders_page(
         orders_list = []
         for order in orders:
             order_dict = dict(order)
-            order_dict["items"] = json.loads(order["items"])
+            # items key'i dict.items() ile çakışıyor, order_items olarak değiştir
+            order_dict["order_items"] = json.loads(order["items"])
+            del order_dict["items"]  # Eski items'ı sil
             orders_list.append(order_dict)
+        
+        # Ürün birimlerini al
+        cursor = await db.execute("SELECT product_type, unit FROM product_stock")
+        rows = await cursor.fetchall()
+        product_units = {row["product_type"]: row["unit"] for row in rows}
     
     return templates.TemplateResponse(
         "orders.html",
@@ -887,6 +921,7 @@ async def orders_page(
             "request": request,
             "orders": orders_list,
             "product_types": PRODUCT_TYPES,
+            "product_units": product_units,
             "delivery_types": DELIVERY_TYPES,
             "payment_methods": PAYMENT_METHODS,
             "order_status": ORDER_STATUS,

@@ -284,16 +284,16 @@
     <div class="order-items">
         <h4>Ürünler</h4>
         <div class="item-list">
-            {% for item in order.items %}
+            {% for item in order.order_items %}
             <div class="item">
-                <span>{{ product_types.get(item.product_type, item.product_type) }} x{{ item.quantity }}</span>
-                <span>{{ item.total | currency }}</span>
+                <span>{{ product_types.get(item.product_type, item.product_type) }}</span>
+                <span>{{ item.quantity }} {{ product_units.get(item.product_type, 'adet') }} × {{ item.unit_price }} ₺ =
+                    <strong>{{ item.total }} ₺</strong></span>
             </div>
             {% endfor %}
         </div>
-        <div
-            style="text-align: right; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--pico-muted-border-color);">
-            <span class="total-amount">Toplam: {{ order.total_amount | currency }}</span>
+        <div class="total-amount">
+            Toplam: {{ order.total_amount }} ₺
         </div>
     </div>
 
