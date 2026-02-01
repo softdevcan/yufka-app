@@ -18,7 +18,8 @@
                 Ürün
                 <select id="product_type" name="product_type" required>
                     {% for key, value in product_types.items() %}
-                    <option value="{{ key }}">{{ value }} (Stok: {{ product_stocks.get(key, {}).get('stock_quantity', 0) }})</option>
+                    <option value="{{ key }}">{{ value }} (Stok: {{ product_stocks[key]['stock_quantity'] if key in
+                        product_stocks else 0 }})</option>
                     {% endfor %}
                 </select>
             </label>
@@ -82,7 +83,8 @@
                 <td>{{ sale['customer_name'] or '-' }}</td>
                 <td>
                     <form method="post" action="/sales/{{ sale['id'] }}/delete" style="margin: 0;">
-                        <button type="submit" class="btn-delete" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+                        <button type="submit" class="btn-delete"
+                            onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
                     </form>
                 </td>
             </tr>
