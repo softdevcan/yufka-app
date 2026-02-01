@@ -13,24 +13,35 @@
             <thead>
                 <tr>
                     <th>Ürün</th>
+                    <th class="text-right">Fiyat</th>
                     <th class="text-right">Stok</th>
                     <th>Durum</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for ps in product_stocks %}
                 <tr>
                     <td><strong>{{ product_types.get(ps['product_type'], ps['product_type']) }}</strong></td>
+                    <td class="text-right">
+                        <form method="post" action="/stock/product/price"
+                            style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <input type="hidden" name="product_type" value="{{ ps['product_type'] }}">
+                            <input type="number" name="price" value="{{ ps['price'] }}" min="0" step="0.01"
+                                style="width: 80px; margin: 0;" required> ₺
+                            <button type="submit" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">Güncelle</button>
+                        </form>
+                    </td>
                     <td class="text-right">{{ ps['stock_quantity'] }} adet</td>
                     <td>
-                        {% if ps['min_stock_level'] > 0 and ps['stock_quantity'] <= ps['min_stock_level'] %}
-                        <span class="stock-warning">⚠️ Düşük</span>
-                        {% elif ps['stock_quantity'] <= 0 %}
-                        <span class="stock-danger">❌ Tükendi</span>
-                        {% else %}
-                        <span class="stock-ok">✓ Yeterli</span>
-                        {% endif %}
+                        {% if ps['min_stock_level'] > 0 and ps['stock_quantity'] <= ps['min_stock_level'] %} <span
+                            class="stock-warning">⚠️ Düşük</span>
+                            {% elif ps['stock_quantity'] <= 0 %} <span class="stock-danger">❌ Tükendi</span>
+                                {% else %}
+                                <span class="stock-ok">✓ Yeterli</span>
+                                {% endif %}
                     </td>
+                    <td></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -89,13 +100,12 @@
                     <td class="text-right">{{ "%.1f"|format(m['stock_quantity']) }} {{ m['unit'] }}</td>
                     <td class="text-right">{{ "%.1f"|format(m['min_stock_level']) }} {{ m['unit'] }}</td>
                     <td>
-                        {% if m['min_stock_level'] > 0 and m['stock_quantity'] <= m['min_stock_level'] %}
-                        <span class="stock-warning">⚠️ Düşük</span>
-                        {% elif m['stock_quantity'] <= 0 %}
-                        <span class="stock-danger">❌ Tükendi</span>
-                        {% else %}
-                        <span class="stock-ok">✓ Yeterli</span>
-                        {% endif %}
+                        {% if m['min_stock_level'] > 0 and m['stock_quantity'] <= m['min_stock_level'] %} <span
+                            class="stock-warning">⚠️ Düşük</span>
+                            {% elif m['stock_quantity'] <= 0 %} <span class="stock-danger">❌ Tükendi</span>
+                                {% else %}
+                                <span class="stock-ok">✓ Yeterli</span>
+                                {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -197,7 +207,8 @@
                 <td>{{ mov['material_name'] }}</td>
                 <td>{{ movement_types.get(mov['movement_type'], mov['movement_type']) }}</td>
                 <td class="text-right {% if mov['quantity'] > 0 %}text-success{% else %}text-danger{% endif %}">
-                    {% if mov['quantity'] > 0 %}+{% endif %}{{ "%.1f"|format(mov['quantity']) }} {{ mov['material_unit'] }}
+                    {% if mov['quantity'] > 0 %}+{% endif %}{{ "%.1f"|format(mov['quantity']) }} {{ mov['material_unit']
+                    }}
                 </td>
                 <td>{{ mov['notes'] or '-' }}</td>
             </tr>

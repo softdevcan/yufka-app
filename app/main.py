@@ -604,6 +604,24 @@ async def adjust_product_stock(
     return RedirectResponse(url="/stock", status_code=302)
 
 
+@app.post("/stock/product/price")
+@require_auth
+async def update_product_price(
+    request: Request,
+    product_type: str = Form(...),
+    price: float = Form(...),
+):
+    """Ürün fiyatı güncelleme"""
+    async with get_db_connection() as db:
+        await db.execute(
+            "UPDATE product_stock SET price = ?, updated_at = CURRENT_TIMESTAMP WHERE product_type = ?",
+            (price, product_type),
+        )
+        await db.commit()
+    
+    return RedirectResponse(url="/stock", status_code=302)
+
+
 # ==================== REPORTS ====================
 
 @app.get("/reports", response_class=HTMLResponse)
@@ -702,11 +720,18 @@ async def reports_page(
 @app.get("/order", response_class=HTMLResponse)
 async def order_form_page(request: Request):
     """Müşteri sipariş formu (public)"""
+    async with get_db_connection() as db:
+        # Ürün fiyatlarını veritabanından al
+        cursor = await db.execute("SELECT product_type, price FROM product_stock")
+        rows = await cursor.fetchall()
+        product_prices = {row["product_type"]: row["price"] for row in rows}
+    
     return templates.TemplateResponse(
         "order_form.html",
         {
             "request": request,
             "product_types": PRODUCT_TYPES,
+            "product_prices": product_prices,
             "delivery_types": DELIVERY_TYPES,
             "payment_methods": PAYMENT_METHODS,
             "min_delivery_amount": MIN_DELIVERY_AMOUNT,
@@ -728,16 +753,23 @@ async def submit_order(request: Request):
     payment_method = form.get("payment_method")
     notes = form.get("notes", "")
     
+    
     # Ürünleri topla
     items = []
     total_amount = 0
     
+    # Ürün fiyatlarını veritabanından al
+    async with get_db_connection() as db:
+        cursor = await db.execute("SELECT product_type, price FROM product_stock")
+        rows = await cursor.fetchall()
+        product_prices = {row["product_type"]: row["price"] for row in rows}
+    
     for key, value in form.items():
-        if key.startswith("quantity_") and value:
-            product_type = key.replace("quantity_", "")
+        if key.startswith("product_") and value:
+            product_type = key.replace("product_", "")
             quantity = int(value)
             if quantity > 0:
-                unit_price = float(form.get(f"price_{product_type}", 0))
+                unit_price = product_prices.get(product_type, 50)
                 item_total = quantity * unit_price
                 items.append({
                     "product_type": product_type,

@@ -30,8 +30,15 @@
             margin-bottom: 0.5rem;
         }
 
+        .product-item>div {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
         .product-item label {
             margin: 0;
+            font-weight: 500;
         }
 
         .product-item input {
@@ -170,10 +177,12 @@
 
                 {% for key, value in product_types.items() %}
                 <div class="product-item">
-                    <label for="product_{{ key }}">{{ value }}</label>
-                    <input type="number" id="product_{{ key }}" name="product_{{ key }}" min="0"
-                        value="{{ form_data.get('product_' + key, '0') if form_data else '0' }}" inputmode="numeric"
-                        class="product-quantity" data-price="{{ product_prices.get(key, 0) }}">
+                    <div>
+                        <label for="product_{{ key }}">{{ value }}</label>
+                        <small style="color: var(--pico-muted-color);">{{ product_prices[key] }} ₺/adet</small>
+                    </div>
+                    <input type="number" id="product_{{ key }}" name="product_{{ key }}" min="0" value="0"
+                        inputmode="numeric" class="product-quantity" data-price="{{ product_prices[key] }}">
                 </div>
                 {% endfor %}
 

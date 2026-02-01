@@ -95,6 +95,7 @@ async def init_db():
                 product_type TEXT NOT NULL UNIQUE,
                 stock_quantity INTEGER NOT NULL DEFAULT 0,
                 min_stock_level INTEGER NOT NULL DEFAULT 0,
+                price REAL NOT NULL DEFAULT 0,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -124,6 +125,12 @@ async def init_db():
         except:
             pass  # Kolon zaten var
 
+        # Ürün fiyatı kolonu ekle (migration)
+        try:
+            await db.execute("ALTER TABLE product_stock ADD COLUMN price REAL NOT NULL DEFAULT 0")
+        except:
+            pass  # Kolon zaten var
+
         # Varsayılan malzemeleri ekle
         default_materials = [
             ("Un", "kg", 0),
@@ -138,13 +145,25 @@ async def init_db():
                 VALUES (?, ?, ?, 0, 0)
             """, (name, unit, price))
 
-        # Varsayılan ürün stoklarını ekle
-        default_products = ["yufka", "sigara_boregi", "manti", "kadayif"]
-        for product in default_products:
+        # Varsayılan ürün stoklarını ve fiyatlarını ekle
+        default_products = [
+            ("yufka", 50),
+            ("sigara_boregi", 75),
+            ("manti", 100),
+            ("kadayif", 80),
+        ]
+        for product_type, price in default_products:
             await db.execute("""
-                INSERT OR IGNORE INTO product_stock (product_type, stock_quantity, min_stock_level)
-                VALUES (?, 0, 0)
-            """, (product,))
+                INSERT OR IGNORE INTO product_stock (product_type, stock_quantity, min_stock_level, price)
+                VALUES (?, 0, 0, ?)
+            """, (product_type, price))
+            
+            # Mevcut ürünlerin fiyatlarını güncelle (eğer 0 ise)
+            await db.execute("""
+                UPDATE product_stock 
+                SET price = ? 
+                WHERE product_type = ? AND price = 0
+            """, (price, product_type))
 
         # Siparişler tablosu
         await db.execute("""
