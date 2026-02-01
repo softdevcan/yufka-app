@@ -2,6 +2,7 @@
 
 # Yufka Takip - Otomatik Kurulum Scripti
 # Domain: yufka.softdevcan.site
+# SSL: Cloudflare (Flexible)
 
 set -e
 
@@ -49,11 +50,10 @@ else
     log_info "Docker zaten kurulu"
 fi
 
-# Docker Compose kurulumu
-if ! command -v docker-compose &> /dev/null; then
-    log_info "Docker Compose kuruluyor..."
-    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
+# Docker Compose kurulumu (v2 plugin olarak)
+if ! docker compose version &> /dev/null; then
+    log_info "Docker Compose plugin kuruluyor..."
+    apt-get install -y -qq docker-compose-plugin
 else
     log_info "Docker Compose zaten kurulu"
 fi
@@ -67,19 +67,19 @@ else
     log_info "Nginx zaten kurulu"
 fi
 
-# Certbot kurulumu
-if ! command -v certbot &> /dev/null; then
-    log_info "Certbot kuruluyor..."
-    apt-get install -y -qq certbot python3-certbot-nginx
-else
-    log_info "Certbot zaten kurulu"
-fi
-
 # Uygulama dizini
 APP_DIR="/opt/yufka-app"
-log_info "Uygulama dizini oluşturuluyor: $APP_DIR"
-mkdir -p $APP_DIR
-cd $APP_DIR
+log_info "Uygulama dizini: $APP_DIR"
+
+# Eğer script uygulama dizininden çalıştırılmıyorsa
+if [ ! -f "docker-compose.yml" ]; then
+    log_error "Bu script uygulama dizininden çalıştırılmalı!"
+    log_error "Önce: cd $APP_DIR"
+    exit 1
+fi
+
+# Data dizini oluştur
+mkdir -p data
 
 # .env dosyası oluştur (eğer yoksa)
 if [ ! -f .env ]; then
@@ -103,16 +103,15 @@ log_info "Nginx konfigürasyonu ayarlanıyor..."
 cp deploy/nginx.conf /etc/nginx/sites-available/yufka
 ln -sf /etc/nginx/sites-available/yufka /etc/nginx/sites-enabled/
 
+# Default site'ı kaldır (opsiyonel)
+rm -f /etc/nginx/sites-enabled/default
+
 # Nginx syntax kontrolü
 nginx -t
 
-# SSL sertifikası
-log_info "SSL sertifikası alınıyor..."
-certbot --nginx -d yufka.softdevcan.site --non-interactive --agree-tos --email admin@softdevcan.site || log_warn "SSL sertifikası alınamadı, manuel olarak alınmalı"
-
 # Docker build ve başlat
 log_info "Docker container'ı başlatılıyor..."
-docker-compose up -d --build
+docker compose up -d --build
 
 # Nginx yeniden başlat
 systemctl restart nginx
@@ -121,7 +120,7 @@ systemctl restart nginx
 log_info "Servis durumu kontrol ediliyor..."
 sleep 5
 
-if docker-compose ps | grep -q "Up"; then
+if docker compose ps | grep -q "running"; then
     log_info "✅ Uygulama başarıyla başlatıldı!"
     echo ""
     echo "=========================================="
@@ -136,9 +135,9 @@ if docker-compose ps | grep -q "Up"; then
     echo ""
     echo "⚠️  ÖNEMLİ: Şifreyi değiştirin!"
     echo "  nano $APP_DIR/.env"
-    echo "  docker-compose restart"
+    echo "  docker compose restart"
     echo ""
 else
     log_error "Uygulama başlatılamadı. Logları kontrol edin:"
-    echo "docker-compose logs"
+    echo "docker compose logs"
 fi
