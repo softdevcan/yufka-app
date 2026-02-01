@@ -10,15 +10,73 @@
     <title>{% block title %}Kadıoğlu Yufka{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        /* Mobile hamburger menu styles */
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-toggle {
+                display: block;
+            }
+
+            nav ul:last-child {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--pico-background-color);
+                border-top: 1px solid var(--pico-muted-border-color);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
+
+            nav ul:last-child.show {
+                display: flex;
+            }
+
+            nav ul:last-child li {
+                width: 100%;
+                text-align: center;
+                border-bottom: 1px solid var(--pico-muted-border-color);
+            }
+
+            nav ul:last-child li:last-child {
+                border-bottom: none;
+            }
+
+            nav ul:last-child li a {
+                display: block;
+                padding: 1rem;
+            }
+
+            header nav {
+                position: relative;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <header>
         <nav>
             <ul>
-                <li><strong>Kadıoğlu Yufka</strong></li>
+                <li><strong>🫓 Kadıoğlu Yufka</strong></li>
             </ul>
             <ul>
+                <li>
+                    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+                </li>
+            </ul>
+            <ul id="navMenu">
                 <li><a href="/" {% if request.url.path=='/' %}aria-current="page" {% endif %}>Ana Sayfa</a></li>
                 <li><a href="/production" {% if request.url.path=='/production' %}aria-current="page" {% endif
                         %}>Üretim</a></li>
@@ -39,30 +97,36 @@
         {% block content %}{% endblock %}
     </main>
 
-    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Tema değiştir">
-        <span id="theme-icon">🌙</span>
-    </button>
+    <footer class="container">
+        <p style="text-align: center; color: var(--pico-muted-color);">
+            © 2026 Kadıoğlu Yufka - Tüm hakları saklıdır
+        </p>
+    </footer>
 
     <script>
-        // Theme toggle
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        }
+        // Hamburger menu toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
 
-        function updateThemeIcon(theme) {
-            const icon = document.getElementById('theme-icon');
-            icon.textContent = theme === 'light' ? '🌙' : '☀️';
-        }
+        if (navToggle && navMenu) {
+            navToggle.addEventListener('click', function () {
+                navMenu.classList.toggle('show');
+            });
 
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
+            // Close menu when clicking outside
+            document.addEventListener('click', function (event) {
+                if (!navToggle.contains(event.target) && !navMenu.contains(event.target)) {
+                    navMenu.classList.remove('show');
+                }
+            });
+
+            // Close menu when clicking a link
+            navMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function () {
+                    navMenu.classList.remove('show');
+                });
+            });
+        }
     </script>
 
     {% block scripts %}{% endblock %}

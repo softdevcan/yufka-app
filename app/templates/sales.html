@@ -38,8 +38,8 @@
         </div>
 
         <div class="summary-card mb-2" id="total-display" style="display: none;">
-            <div class="label">Toplam Tutar</div>
-            <div class="value" id="calculated-total">0,00 ₺</div>
+            <strong>Toplam Tutar:</strong>
+            <span id="calculated-total" style="font-size: 1.5rem; color: var(--pico-primary);">0.00 ₺</span>
         </div>
 
         <label for="customer_name">
@@ -121,6 +121,13 @@
         if (selectedProduct && productPrices[selectedProduct]) {
             unitPriceInput.value = productPrices[selectedProduct].toFixed(2);
             calculateTotal();
+        }
+    });
+
+    // Sayfa yüklendiğinde ilk ürünün fiyatını doldur
+    document.addEventListener('DOMContentLoaded', function () {
+        if (productSelect.value && productPrices[productSelect.value]) {
+            unitPriceInput.value = productPrices[productSelect.value].toFixed(2);
         }
     });
 
